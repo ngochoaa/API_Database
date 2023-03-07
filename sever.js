@@ -10,18 +10,22 @@ const Feedback = require('./models/feedback')
  const Sanpham = require('./models/sanpham')
 const Tichdiem = require('./models/tichdiem')
 const Uudai = require('./models/uudai')
+const Category = require('./models/category')
+var router = require('./router/router')
+const port = 3000 || process.env.PORT
 
 
 
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(router);
 
 mongoose.set("strictQuery", false)
 
 mongoose.connect("mongodb+srv://hoangochuynh252:hoangochuynh252@cluster0.i0zhbp5.mongodb.net/Node-API?retryWrites=true&w=majority")
     .then(() => {
-        app.listen(3000, () => {
+        app.listen(port, () => {
             console.log('Node API app running 3000 ')
         })
 
@@ -34,6 +38,7 @@ mongoose.connect("mongodb+srv://hoangochuynh252:hoangochuynh252@cluster0.i0zhbp5
 app.get('/', (req, res) => {
     res.send('Hello NODE API')
 })
+
 
 //SELECT
 app.get('/user', async (req, res) => {
@@ -76,15 +81,15 @@ app.put('/user/:id', async (req, res) => {
 })
 
 //ADD
-app.post('/user', async (req, res) => {
-    try {
-        const user = await User.create(req.body)
-        res.status(200).json(user);
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({ message: error.message });
-    }
-})
+// app.post('/user', async (req, res) => {
+//     try {
+//         const user = await User.create(req.body)
+//         res.status(200).json(user);
+//     } catch (error) {
+//         console.log(error.message)
+//         res.status(500).json({ message: error.message });
+//     }
+// })
 
 //DELETE
 app.delete('/user/:id', async (req, res) => {
@@ -539,3 +544,72 @@ app.delete('/uudai/:id', async (req, res) => {
     
 })
 
+//--------------------------TBL CATEGORY-------------------------------------------
+
+
+app.get('/category', async (req, res) => {
+    try {
+        const category = await Category.find({});
+        res.status(200).json(category)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+})
+//SELECT BY ID
+app.get('/category/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const category = await Category.findById(id);
+        res.status(200).json(category)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+})
+
+//UPDATE
+
+app.put('/category/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ID = await Category.findByIdAndUpdate(id, req.body);
+        if (!ID) {
+            return res.status(404).json({ message: 'Cannot find any category with id' })
+        }
+        const updaeCategory = await Category.findById(id);
+        res.status(200).json(updaeCategory);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//ADD
+app.post('/category', async (req, res) => {
+    try {
+        const category = await Category.create(req.body)
+        res.status(200).json(category);
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//DELETE
+app.delete('/category/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        const dltcategory = await Category.findByIdAndDelete(id);
+        if(!dltcategory){
+            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        }
+        res.status(200).json(dltcategory);
+    }
+    catch(error){
+        console.log(error.message)
+        res.status(500).json({ message:error.message});
+    }
+    
+})
