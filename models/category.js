@@ -2,10 +2,14 @@ const mongoose = require('mongoose')
 
 const categorySchema = mongoose.Schema(
     {
-        Name: {
+        name: {
             type: String,
             required: [true, "Please enter name"]
         },
+        products:[{
+            type: mongoose.Schema.Types.ObjectId,
+            ref:"SanPham"
+        }]
     },
     {
         timestamps: true,

@@ -4,13 +4,14 @@ const app = express()
 const User = require('./models/user')
 const Admin = require('./models/admin')
 const Feedback = require('./models/feedback')
- const Hoadon = require('./models/hoadon')
+const Hoadon = require('./models/hoadon')
 
- const Nhanvien = require('./models/nhanvien')
- const Sanpham = require('./models/sanpham')
+const Nhanvien = require('./models/nhanvien')
+const Sanpham = require('./models/sanpham')
 const Tichdiem = require('./models/tichdiem')
 const Uudai = require('./models/uudai')
 const Category = require('./models/category')
+const Banner = require('./models/banner')
 var router = require('./router/router')
 const port = 3000 || process.env.PORT
 
@@ -94,18 +95,18 @@ app.put('/user/:id', async (req, res) => {
 //DELETE
 app.delete('/user/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltuser = await User.findByIdAndDelete(id);
-        if(!dltuser){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltuser) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
-        res.status(200).json(dltuser);z
+        res.status(200).json(dltuser); z
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
 })
 
 
@@ -168,18 +169,18 @@ app.post('/admin', async (req, res) => {
 //DELETE
 app.delete('/admin/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltadmin = await Admin.findByIdAndDelete(id);
-        if(!dltadmin){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltadmin) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
-        res.status(200).json(dltadmin);z
+        res.status(200).json(dltadmin); z
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
 })
 
 
@@ -241,18 +242,18 @@ app.post('/nhanvien', async (req, res) => {
 //DELETE
 app.delete('/nhanvien/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltnhanvien = await Nhanvien.findByIdAndDelete(id);
-        if(!dltadmin){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltadmin) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
-        res.status(200).json(dltnhanvien);z
+        res.status(200).json(dltnhanvien); z
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
 })
 
 
@@ -299,18 +300,18 @@ app.post('/hoadon', async (req, res) => {
 //DELETE
 app.delete('/hoadon/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dlthoadon = await Hoadon.findByIdAndDelete(id);
-        if(!dlthoadon){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dlthoadon) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
         res.status(200).json(dlthoadon);
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
 })
 
 
@@ -319,8 +320,9 @@ app.delete('/hoadon/:id', async (req, res) => {
 
 
 app.get('/sanpham', async (req, res) => {
+
     try {
-        const sanpham = await Sanpham.find({});
+        const sanpham = await Sanpham.find({}).populate("LoaiSP");
         res.status(200).json(sanpham)
     } catch (error) {
         res.status(500).json({
@@ -328,11 +330,11 @@ app.get('/sanpham', async (req, res) => {
         });
     }
 })
-//SELECT BY ID
+//SELECT BY ID  
 app.get('/sanpham/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const sanpham = await Sanpham.findById(id);
+        const sanpham = await Sanpham.findById(id).populate("LoaiSP");
         res.status(200).json(sanpham)
     } catch (error) {
         res.status(500).json({
@@ -350,18 +352,22 @@ app.put('/sanpham/:id', async (req, res) => {
         if (!ID) {
             return res.status(404).json({ message: 'Cannot find any user with id' })
         }
-        const updaesanpham = await Sanpham.findById(id);
+        const updaesanpham = await Sanpham.findById(id).populate("LoaiSP");
         res.status(200).json(updaesanpham);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 })
 
-//ADD
 app.post('/sanpham', async (req, res) => {
     try {
         const sanpham = await Sanpham.create(req.body)
+        if(req.body.category){
+            const category = Category.findById(req.body.category);
+           await category.updateOne({$push: {products: sanpham._id}})
+        }
         res.status(200).json(sanpham);
+       
     } catch (error) {
         console.log(error.message)
         res.status(500).json({ message: error.message });
@@ -371,16 +377,16 @@ app.post('/sanpham', async (req, res) => {
 //DELETE
 app.delete('/sanpham/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltsanpham = await Sanpham.findByIdAndDelete(id);
-        if(!dltsanpham){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltsanpham) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
         res.status(200).json(dltsanpham);
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -423,16 +429,16 @@ app.post('/feedback', async (req, res) => {
 //DELETE
 app.delete('/feedback/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltfeedback = await Feedback.findByIdAndDelete(id);
-        if(!dltfeedback){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltfeedback) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
         res.status(200).json(dltfeedback);
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -530,18 +536,18 @@ app.post('/uudai', async (req, res) => {
 //DELETE
 app.delete('/uudai/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltuudai = await Uudai.findByIdAndDelete(id);
-        if(!dltadmin){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltadmin) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
         res.status(200).json(dltuudai);
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
 })
 
 //--------------------------TBL CATEGORY-------------------------------------------
@@ -549,7 +555,7 @@ app.delete('/uudai/:id', async (req, res) => {
 
 app.get('/category', async (req, res) => {
     try {
-        const category = await Category.find({});
+        const category = await Category.find({}).populate("products");
         res.status(200).json(category)
     } catch (error) {
         res.status(500).json({
@@ -561,7 +567,7 @@ app.get('/category', async (req, res) => {
 app.get('/category/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const category = await Category.findById(id);
+        const category = await Category.findById(id).populate("products");
         res.status(200).json(category)
     } catch (error) {
         res.status(500).json({
@@ -579,7 +585,7 @@ app.put('/category/:id', async (req, res) => {
         if (!ID) {
             return res.status(404).json({ message: 'Cannot find any category with id' })
         }
-        const updaeCategory = await Category.findById(id);
+        const updaeCategory = await Category.findById(id).populate("products");
         res.status(200).json(updaeCategory);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -588,6 +594,7 @@ app.put('/category/:id', async (req, res) => {
 
 //ADD
 app.post('/category', async (req, res) => {
+
     try {
         const category = await Category.create(req.body)
         res.status(200).json(category);
@@ -600,16 +607,97 @@ app.post('/category', async (req, res) => {
 //DELETE
 app.delete('/category/:id', async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const dltcategory = await Category.findByIdAndDelete(id);
-        if(!dltcategory){
-            return res.status(404).json({message: 'CANNOT FIND USER BY ID'})
+        if (!dltcategory) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
         }
         res.status(200).json(dltcategory);
     }
-    catch(error){
+    catch (error) {
         console.log(error.message)
-        res.status(500).json({ message:error.message});
+        res.status(500).json({ message: error.message });
     }
-    
+
+})
+
+//--------------------------TBL BANNER-------------------------------------------
+
+
+app.get('/banner', async (req, res) => {
+    try {
+        const banner = await Banner.find();
+        res.status(200).json(banner)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+})
+app.get('/banner/images', async (req, res) => {
+    try {
+        const banner = await Banner.find().select('images');
+        res.status(200).json(banner)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+})
+//SELECT BY ID
+app.get('/banner/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const banner = await Banner.findById(id);
+        res.status(200).json(banner)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+})
+
+//UPDATE
+
+app.put('/banner/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ID = await Banner.findByIdAndUpdate(id, req.body);
+        if (!ID) {
+            return res.status(404).json({ message: 'Cannot find any banner with id' })
+        }
+        const updatebanner = await Banner.findById(id);
+        res.status(200).json(updatebanner);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//ADD
+app.post('/banner', async (req, res) => {
+
+    try {
+        const banner = await Banner.create(req.body)
+        res.status(200).json(banner);
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//DELETE
+app.delete('/banner/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const dltbanner = await Banner.findByIdAndDelete(id);
+        if (!dltbanner) {
+            return res.status(404).json({ message: 'CANNOT FIND USER BY ID' })
+        }
+        res.status(200).json(dltcategory);
+    }
+    catch (error) {
+        console.log(error.message)
+        res.status(500).json({ message: error.message });
+    }
+
 })

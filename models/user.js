@@ -15,6 +15,14 @@ const userSchema = mongoose.Schema(
             type:String,
             require:true,
         },
+        Gioitinh:{
+            type: String,
+            require:true
+        },
+        Ngaysinh:{
+            type: String,
+            require:true
+        }
     },
     {
         timestamps: true,
