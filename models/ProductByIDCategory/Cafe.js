@@ -1,31 +1,27 @@
 const mongoose = require("mongoose");
 
-const userSchema = mongoose.Schema(
+const CaFeSchema = mongoose.Schema(
   {
-    TenKH: {
+    title: {
       type: String,
       required: [true, "Please enter your name"],
     },
-    SDT: {
+    category: {
       type: String,
       required: true,
       default: 0,
     },
-    Matkhau: {
+    price: {
       type: String,
       require: true,
     },
-    Gioitinh: {
+    description: {
       type: String,
       require: true,
     },
-    Ngaysinh: {
+    image: {
       type: String,
-      require: true,
-    },
-    DiemTL: {
-      type: String,
-      require: true,
+      required: true,
     },
   },
   {
@@ -33,5 +29,5 @@ const userSchema = mongoose.Schema(
   }
 );
 
-const user = mongoose.model("Users", userSchema);
-module.exports = user;
+const cafe = mongoose.model("Cafe", CaFeSchema);
+module.exports = cafe;

@@ -26,14 +26,14 @@ var loginUserControllerFn = async (req, res) => {
     try {
         result = await userService.loginuserDBService(req.body);
         if (result.status) {
-            res.send({ "status": true, "message": result.msg });
+            res.send( result.msg );
         } else {
-            res.send({ "status": false, "message": result.msg });
+            res.send(result.msg );
         }
 
     } catch (error) {
         console.log(error);
-        res.send({ "status": false, "message": error.msg });
+        res.send( error.msg );
     }
 }
 
