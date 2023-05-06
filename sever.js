@@ -56,19 +56,19 @@ app.get("/", (req, res) => {
 //CART
 
 // Lấy thông tin giỏ hàng của người dùng
-app.get('/cart/:userId', async (req, res) => {
+app.get("/cart/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
     const cart = await Cart.findOne({ userId });
     res.status(200).json(cart);
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi server' });
+    res.status(500).json({ error: "Lỗi server" });
   }
 });
 
 // Thêm sản phẩm vào giỏ hàng
-app.post('/cart/:userId/items', async (req, res) => {
+app.post("/cart/:userId/items", async (req, res) => {
   const { userId } = req.params;
   const { productId, quantity, price, subtotal } = req.body;
 
@@ -88,13 +88,13 @@ app.post('/cart/:userId/items', async (req, res) => {
       await newCart.save();
     }
 
-    res.status(201).json({ message: 'Thêm sản phẩm vào giỏ hàng thành công' });
+    res.status(201).json({ message: "Thêm sản phẩm vào giỏ hàng thành công" });
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi server' });
+    res.status(500).json({ error: "Lỗi server" });
   }
 });
 //CẬP NHẬT GIỎ HÀNG
-app.put('/cart/:userId', async (req, res) => {
+app.put("/cart/:userId", async (req, res) => {
   const { userId } = req.params;
   const { items } = req.body;
 
@@ -104,28 +104,28 @@ app.put('/cart/:userId', async (req, res) => {
     if (cart) {
       cart.items = items; // Cập nhật lại danh sách sản phẩm trong giỏ hàng
       await cart.save();
-      res.status(200).json({ message: 'Cập nhật giỏ hàng thành công' });
+      res.status(200).json({ message: "Cập nhật giỏ hàng thành công" });
     } else {
-      res.status(404).json({ error: 'Không tìm thấy giỏ hàng' });
+      res.status(404).json({ error: "Không tìm thấy giỏ hàng" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi server' });
+    res.status(500).json({ error: "Lỗi server" });
   }
 });
 //XÓA GIỎ HÀNG
-app.delete('/cart/:userId', async (req, res) => {
+app.delete("/cart/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
     const cart = await Cart.findOneAndRemove({ userId });
 
     if (cart) {
-      res.status(200).json({ message: 'Xóa giỏ hàng thành công' });
+      res.status(200).json({ message: "Xóa giỏ hàng thành công" });
     } else {
-      res.status(404).json({ error: 'Không tìm thấy giỏ hàng' });
+      res.status(404).json({ error: "Không tìm thấy giỏ hàng" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi server' });
+    res.status(500).json({ error: "Lỗi server" });
   }
 });
 
@@ -980,6 +980,20 @@ app.post("/products/category/Cafe", async (req, res) => {
   }
 });
 
+//UPDATE
+app.put("/products/category/Cafe/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ID = await CAFE.findByIdAndUpdate(id, req.body);
+    if (!ID) {
+      return res.status(404).json({ message: "Cannot find with id" });
+    }
+    const updateCafe = await CAFE.findById(id);
+    res.status(200).json(updateCafe);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 //DELETE
 app.delete("/products/category/Cafe/:id", async (req, res) => {
   try {
@@ -1005,7 +1019,20 @@ app.get("/products/category/Ice", async (req, res) => {
     });
   }
 });
-
+//UPDATE
+app.put("/products/category/Ice/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ID = await DAXAY.findByIdAndUpdate(id, req.body);
+    if (!ID) {
+      return res.status(404).json({ message: "Cannot find with id" });
+    }
+    const updateDaxay = await DAXAY.findById(id);
+    res.status(200).json(updateDaxay);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 //ADD
 app.post("/products/category/Ice", async (req, res) => {
   try {
@@ -1043,7 +1070,20 @@ app.get("/products/category/Juice", async (req, res) => {
     });
   }
 });
-
+//UPDATE
+app.put("/products/category/Juice/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ID = await NUOCEP.findByIdAndUpdate(id, req.body);
+    if (!ID) {
+      return res.status(404).json({ message: "Cannot find with id" });
+    }
+    const updateNuocEp = await NUOCEP.findById(id);
+    res.status(200).json(updateNuocEp);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 //ADD
 app.post("/products/category/Juice", async (req, res) => {
   try {
@@ -1079,6 +1119,21 @@ app.get("/products/category/Tea", async (req, res) => {
     res.status(500).json({
       message: error.message,
     });
+  }
+});
+
+//UPDATE
+app.put("/products/category/Tea/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ID = await TRA.findByIdAndUpdate(id, req.body);
+    if (!ID) {
+      return res.status(404).json({ message: "Cannot find with id" });
+    }
+    const updateTra = await TRA.findById(id);
+    res.status(200).json(updateTra);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -1120,6 +1175,20 @@ app.get("/products/category/MilkTea", async (req, res) => {
   }
 });
 
+//UPDATE
+app.put("/products/category/MilkTea/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ID = await TRASUA.findByIdAndUpdate(id, req.body);
+    if (!ID) {
+      return res.status(404).json({ message: "Cannot find with id" });
+    }
+    const updateTraSua = await TRASUA.findById(id);
+    res.status(200).json(updateTraSua);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 //ADD
 app.post("/products/category/MilkTea", async (req, res) => {
   try {
