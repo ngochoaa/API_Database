@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 
 const sanphamSchema = mongoose.Schema(
     {
+        id:{
+            type:String,
+            require:true
+        },
         TenSP: {
             type: String,
             required: [true, "Please enter your name"]

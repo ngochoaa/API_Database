@@ -21,6 +21,9 @@ const DAXAY = require("./models/ProductByIDCategory/DaXay");
 const NUOCEP = require("./models/ProductByIDCategory/NuocEp");
 const TRA = require("./models/ProductByIDCategory/Tra");
 const TRASUA = require("./models/ProductByIDCategory/TraSua");
+const Cart = require("./models/cart");
+
+const paypal = require("paypal-rest-sdk");
 
 const port = 3000 || process.env.PORT;
 
@@ -48,6 +51,136 @@ mongoose
 
 app.get("/", (req, res) => {
   res.send("Hello NODE API");
+});
+
+//CART
+
+// Lấy thông tin giỏ hàng của người dùng
+app.get('/cart/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const cart = await Cart.findOne({ userId });
+    res.status(200).json(cart);
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// Thêm sản phẩm vào giỏ hàng
+app.post('/cart/:userId/items', async (req, res) => {
+  const { userId } = req.params;
+  const { productId, quantity, price, subtotal } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ userId });
+
+    if (cart) {
+      // Giỏ hàng đã tồn tại, thêm sản phẩm mới vào
+      cart.items.push({ productId, quantity, price, subtotal });
+      await cart.save();
+    } else {
+      // Tạo giỏ hàng mới và thêm sản phẩm vào
+      const newCart = new Cart({
+        userId,
+        items: [{ productId, quantity, price, subtotal }],
+      });
+      await newCart.save();
+    }
+
+    res.status(201).json({ message: 'Thêm sản phẩm vào giỏ hàng thành công' });
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+//CẬP NHẬT GIỎ HÀNG
+app.put('/cart/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { items } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ userId });
+
+    if (cart) {
+      cart.items = items; // Cập nhật lại danh sách sản phẩm trong giỏ hàng
+      await cart.save();
+      res.status(200).json({ message: 'Cập nhật giỏ hàng thành công' });
+    } else {
+      res.status(404).json({ error: 'Không tìm thấy giỏ hàng' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+//XÓA GIỎ HÀNG
+app.delete('/cart/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const cart = await Cart.findOneAndRemove({ userId });
+
+    if (cart) {
+      res.status(200).json({ message: 'Xóa giỏ hàng thành công' });
+    } else {
+      res.status(404).json({ error: 'Không tìm thấy giỏ hàng' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+//THANH TOÁN
+
+paypal.configure({
+  mode: "sandbox",
+  client_id:
+    "ATJRRo4MAb6Y8Vh377l5jfmvHRZi2rAWL4aJjESQHn4Rf24PUUa43sEdJlFgh70Y7QS5tzfwLkZ1EH16",
+  client_secret:
+    "EHCQS5Zk4WacDmiHUnMsLE6wtALW-uMoYljvLXU4vZZmDrmhq700gIGJaAZ2fjKYc3WhjZGswWiNn3kt",
+});
+
+app.post("/pay", function (req, res) {
+  var payment = {
+    intent: "sale",
+    payer: {
+      payment_method: "paypal",
+    },
+    redirect_urls: {
+      return_url: "http://localhost:3000/success",
+      cancel_url: "http://localhost:3000/cancel",
+    },
+    transactions: [
+      {
+        item_list: {
+          items: [
+            {
+              name: "item",
+              sku: "item",
+              price: "1.00",
+              currency: "USD",
+              quantity: 1,
+            },
+          ],
+        },
+        amount: {
+          currency: "USD",
+          total: "1.00",
+        },
+        description: "This is the payment description.",
+      },
+    ],
+  };
+  paypal.payment.create(payment, function (error, payment) {
+    if (error) {
+      console.log(error);
+    } else {
+      for (var i = 0; i < payment.links.length; i++) {
+        if (payment.links[i].rel === "approval_url") {
+          res.redirect(payment.links[i].href);
+        }
+      }
+    }
+  });
 });
 
 //SELECT
