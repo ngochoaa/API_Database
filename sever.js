@@ -139,49 +139,66 @@ paypal.configure({
     "EHCQS5Zk4WacDmiHUnMsLE6wtALW-uMoYljvLXU4vZZmDrmhq700gIGJaAZ2fjKYc3WhjZGswWiNn3kt",
 });
 
-app.post("/pay", function (req, res) {
-  var payment = {
-    intent: "sale",
+app.post('/payment', (req, res) => {
+  const amount = req.body.amount;
+
+  // Tạo đối tượng thanh toán PayPal
+  const paymentData = {
+    intent: 'sale',
     payer: {
-      payment_method: "paypal",
+      payment_method: 'paypal'
     },
     redirect_urls: {
-      return_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
+      return_url: 'http://localhost:3000/success',
+      cancel_url: 'http://localhost:3000/cancel'
     },
-    transactions: [
-      {
-        item_list: {
-          items: [
-            {
-              name: "item",
-              sku: "item",
-              price: "1.00",
-              currency: "USD",
-              quantity: 1,
-            },
-          ],
-        },
-        amount: {
-          currency: "USD",
-          total: "1.00",
-        },
-        description: "This is the payment description.",
-      },
-    ],
-  };
-  paypal.payment.create(payment, function (error, payment) {
-    if (error) {
-      console.log(error);
-    } else {
-      for (var i = 0; i < payment.links.length; i++) {
-        if (payment.links[i].rel === "approval_url") {
-          res.redirect(payment.links[i].href);
-        }
+    transactions: [{
+      amount: {
+        total: amount,
+        currency: 'USD'
       }
+    }]
+  };
+
+  // Tạo thanh toán PayPal
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      // Redirect người dùng đến URL thanh toán PayPal
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.redirect(approvalUrl);
     }
   });
 });
+
+// Tạo một route để xử lý sau khi thanh toán thành công
+app.get('/success', (req, res) => {
+  const paymentId = req.query.paymentId;
+  const payerId = req.query.PayerID;
+
+  // Xác nhận thanh toán PayPal
+  const executePayment = {
+    payer_id: payerId
+  };
+
+  paypal.payment.execute(paymentId, executePayment, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      // Thanh toán thành công
+      res.send('Payment successful');
+    }
+  });
+});
+
+// Tạo một route để xử lý khi hủy thanh toán
+app.get('/cancel', (req, res) => {
+  res.send('Payment canceled');
+});
+
 
 //SELECT
 app.get("/user", async (req, res) => {
@@ -447,59 +464,6 @@ app.get("/sanpham", async (req, res) => {
     res.status(500).json({
       message: error.message,
     });
-  }
-});
-
-app.get("/sanphamtest", async (req, res) => {
-  try {
-    const sanpham = await Sanpham.find({}).populate("LoaiSP");
-    res.status(200).json(sanpham);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-app.delete("/sanphamtest/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const dltsanpham = await Sanpham.findByIdAndDelete(id);
-    if (!dltsanpham) {
-      return res.status(404).json({ message: "CANNOT FIND USER BY ID" });
-    }
-    res.status(200).json(dltsanpham);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.put("/sanphamtest/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const ID = await Sanpham.findByIdAndUpdate(id, req.body);
-    if (!ID) {
-      return res.status(404).json({ message: "Cannot find any user with id" });
-    }
-    const updaesanpham = await Sanpham.findById(id).populate("LoaiSP");
-    res.status(200).json(updaesanpham);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.post("/sanphamtest", async (req, res) => {
-  try {
-    const sanpham = await Sanpham.create(req.body);
-    if (req.body.category) {
-      const category = Category.findById(req.body.category);
-      await category.updateOne({ $push: { products: sanpham._id } });
-    }
-    res.status(200).json(sanpham);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: error.message });
   }
 });
 
