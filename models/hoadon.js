@@ -2,23 +2,12 @@ const mongoose = require('mongoose')
 
 const HoadonSchema = mongoose.Schema(
     {
-        TenSP: {
+        TenHoaDon: {
             type: String,
-            required: [true, "Please enter name"]
+            default: "Hóa Đơn CoCoTea",
         },
-        Soluong: {
-            type: String,
-            required: true,
-            default: 0
-        },
-        Thanhtien:{
-            type:String,
-            require:true,
-        },
-        GiaSP:{
-            type:String,
-            require:true,
-        },
+        
+        creationDate: { type: Date, default: Date.now },
     },
     {
         timestamps: true,

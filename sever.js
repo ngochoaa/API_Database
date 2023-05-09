@@ -144,7 +144,7 @@ app.post('/payment', (req, res) => {
 
   // Tạo đối tượng thanh toán PayPal
   const paymentData = {
-    intent: 'sale',
+    intent: 'CocoTea',
     payer: {
       payment_method: 'paypal'
     },
@@ -155,7 +155,7 @@ app.post('/payment', (req, res) => {
     transactions: [{
       amount: {
         total: amount,
-        currency: 'USD'
+        currency: 'VND'
       }
     }]
   };
@@ -240,16 +240,80 @@ app.put("/user/:id", async (req, res) => {
   }
 });
 
-//ADD
-// app.post('/user', async (req, res) => {
-//     try {
-//         const user = await User.create(req.body)
-//         res.status(200).json(user);
-//     } catch (error) {
-//         console.log(error.message)
-//         res.status(500).json({ message: error.message });
-//     }
-// })
+//-------------------------------------------------------CHI TIẾT BILL---------------------------
+// Tạo route POST để tạo hóa đơn mới
+app.post('/bill', (req, res) => {
+  const { billId, productName, quantity, price } = req.body;
+
+  const billDetail = new BillDetail({
+    billId,
+    productName,
+    quantity,
+    price
+  });
+
+  billDetail.save()
+    .then(savedBillDetail => {
+      res.status(201).json(savedBillDetail);
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Lỗi khi tạo chi tiết hóa đơn', error });
+    });
+});
+
+// Tạo route GET để lấy danh sách chi tiết hóa đơn
+app.get('/billdetail', (req, res) => {
+  BillDetail.find()
+    .populate('billId')
+    .then(billDetails => {
+      res.json(billDetails);
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Lỗi khi lấy danh sách chi tiết hóa đơn', error });
+    });
+});
+
+// Tạo route GET để lấy chi tiết một hóa đơn dựa trên billId
+app.get('/billdetail/:billId', (req, res) => {
+  const { billId } = req.params;
+
+  BillDetail.find({ billId })
+    .populate('billId')
+    .then(billDetails => {
+      res.json(billDetails);
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Lỗi khi lấy chi tiết hóa đơn', error });
+    });
+});
+
+// Tạo route PUT để cập nhật chi tiết hóa đơn dựa trên billId
+app.put('/billdetail/:id', (req, res) => {
+  const { id } = req.params;
+  const { productName, quantity, price } = req.body;
+
+  BillDetail.findByIdAndUpdate(id, { productName, quantity, price }, { new: true })
+    .then(updatedBillDetail => {
+      res.json(updatedBillDetail);
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Lỗi khi cập nhật chi tiết hóa đơn', error });
+    });
+});
+
+
+// Tạo route DELETE để xóa một chi tiết hóa đơn dựa trên id
+app.delete('/billdetail/:id', (req, res) => {
+  const { id } = req.params;
+
+  BillDetail.findByIdAndDelete(id)
+    .then(() => {
+      res.json({ message: 'Xóa chi tiết hóa đơn thành công' });
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Lỗi khi xóa chi tiết hóa đơn', error });
+    });
+});
 
 //DELETE
 app.delete("/user/:id", async (req, res) => {
