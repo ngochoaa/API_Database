@@ -22,7 +22,7 @@ const NUOCEP = require("./models/ProductByIDCategory/NuocEp");
 const TRA = require("./models/ProductByIDCategory/Tra");
 const TRASUA = require("./models/ProductByIDCategory/TraSua");
 const Cart = require("./models/cart");
-
+const Bill = require("./models/BillDetail")
 const paypal = require("paypal-rest-sdk");
 
 const port = 3000 || process.env.PORT;

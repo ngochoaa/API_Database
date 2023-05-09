@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const HoadonSchema = mongoose.Schema(
+const BillSchema = mongoose.Schema(
   {
     billId: { type: mongoose.Schema.Types.ObjectId, ref: "Hoadon" },
     productName: {
@@ -25,5 +25,5 @@ const HoadonSchema = mongoose.Schema(
   }
 );
 
-const Bill = mongoose.model("Bill", BillSchema);
+const bill = mongoose.model("Bill", BillSchema);
 module.exports = bill;
